@@ -1,0 +1,145 @@
+= Install a local Cassandra
+
+The simplest way to install Cassandra is via the excellent https://github.com/pcmanus/ccm[ccm] tool.
+
+If you are using a Mac-OSX, you may have to add more loopback interfaces this way:
+
+[source]
+----
+sudo ifconfig lo0 alias 127.0.0.2 up
+sudo ifconfig lo0 alias 127.0.0.3 up
+----
+
+And bring up a 3 node Cassandra 3.9 based cluster:
+
+[source]
+----
+ccm create test -v 3.9 -n 3 -s --vnodes
+----
+
+
+Connect to one of the nodes:
+
+[source]
+----
+ccm node1 cqlsh
+----
+
+And run these cql statements
+
+[source]
+----
+
+CREATE KEYSPACE IF NOT EXISTS sample WITH replication = {'class':'SimpleStrategy', 'replication_factor':1};
+
+use sample;
+
+CREATE TABLE IF NOT EXISTS  sample.hotels (
+    id UUID,
+    name varchar,
+    address varchar,
+    state varchar,
+    zip varchar,
+    primary key(id)
+);
+
+CREATE TABLE IF NOT EXISTS  sample.hotels_by_letter (
+    first_letter varchar,
+    hotel_name varchar,
+    hotel_id UUID,
+    address varchar,
+    state varchar,
+    zip varchar,
+    primary key((first_letter), hotel_name, hotel_id)
+);
+
+
+CREATE MATERIALIZED VIEW sample.hotels_by_state AS
+SELECT id, name, address, state, zip FROM hotels
+WHERE state IS NOT NULL AND id IS NOT NULL AND name IS NOT NULL
+PRIMARY KEY ((state), id)
+WITH CLUSTERING ORDER BY (name DESC)
+----
+
+= Run the App
+
+[source]
+----
+./gradlew clean bootRun
+----
+
+= Populate Data
+
+Assuming that https://httpie.org/[httpie] is installed in your machine
+
+[source]
+----
+http POST 'http://localhost:8080/hotels' state="WA" name="A Sample Hotel" zip="00001" address="Address 1"
+http POST 'http://localhost:8080/hotels' state="WA" name="B Sample Hotel" zip="00002" address="Address 2"
+http POST 'http://localhost:8080/hotels' state="OR" name="C Sample Hotel" zip="00003" address="Address 3"
+----
+
+OR with CURL
+
+[source]
+----
+curl -X "POST" "http://localhost:8080/hotels" \
+     -H "Accept: application/json" \
+     -H "Content-Type: application/json" \
+     -d $'{
+  "name": "A Sample Hotel",
+  "address": "Address 1",
+  "state": "WA",
+  "zip": "00001"
+}'
+
+curl -X "POST" "http://localhost:8080/hotels" \
+     -H "Accept: application/json" \
+     -H "Content-Type: application/json" \
+     -d $'{
+  "name": "B Sample Hotel",
+  "address": "Address 2",
+  "state": "WA",
+  "zip": "00002"
+}'
+
+curl -X "POST" "http://localhost:8080/hotels" \
+     -H "Accept: application/json" \
+     -H "Content-Type: application/json" \
+     -d $'{
+  "name": "C Sample Hotel",
+  "address": "Address 3",
+  "state": "OR",
+  "zip": "10001"
+}'
+----
+
+= Query Data
+
+Get hotels with names starting with "A" - internally makes use of a table with duplicated content,
+maintained with first letter as the partition key
+
+[source]
+----
+http GET 'http://localhost:8080/hotels/startingwith/A'
+----
+
+OR with Curl
+
+[source]
+----
+curl -X "GET" "http://localhost:8080/hotels/startingwith/A" \
+     -H "Accept: application/json"
+----
+
+Get Hotels from State - makes use of a materialized view
+[source]
+----
+http GET 'http://localhost:8080/hotels/fromstate/OR'
+----
+
+[source]
+----
+curl -X "GET" "http://localhost:8080/hotels/fromstate/OR" \
+     -H "Accept: application/json"
+----
