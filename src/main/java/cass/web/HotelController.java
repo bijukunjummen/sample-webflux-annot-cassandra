@@ -37,7 +37,8 @@ public class HotelController {
     @PutMapping
     public Mono<ResponseEntity<Hotel>> update(@RequestBody Hotel hotel) {
         return this.hotelService.update(hotel)
-                .map(savedHotel -> new ResponseEntity<>(savedHotel, HttpStatus.CREATED));
+                .map(savedHotel -> new ResponseEntity<>(savedHotel, HttpStatus.CREATED))
+                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @DeleteMapping(path = "/{id}")
