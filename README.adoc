@@ -1,3 +1,6 @@
+This is a sample application demonstrating Spring 5 Webflux framework. It uses Spring Data Cassandra's support for reactive libraries
+to provide an end to end reactive flow.
+
 = Install a local Cassandra
 
 The simplest way to install Cassandra is via the excellent https://github.com/pcmanus/ccm[ccm] tool.
