@@ -3,3 +3,7 @@ spring:
     cassandra:
       keyspace-name: sample
       contact-points: localhost
+#logging:
+#  level:
+#    root: debug
+      
