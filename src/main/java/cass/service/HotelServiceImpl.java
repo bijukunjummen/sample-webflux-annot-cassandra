@@ -39,7 +39,7 @@ public class HotelServiceImpl implements HotelService {
                 .flatMap(existingHotel ->
                         this.hotelByLetterRepository.delete(new HotelByLetter(existingHotel).getHotelByLetterKey())
                                 .then(this.hotelByLetterRepository.save(new HotelByLetter(hotel)))
-                                .then(this.hotelRepository.update(hotel))).next();
+                                .then(this.hotelRepository.update(hotel)));
     }
 
     @Override
@@ -50,8 +50,10 @@ public class HotelServiceImpl implements HotelService {
     @Override
     public Mono<Boolean> delete(UUID uuid) {
         Mono<Hotel> hotelMono = this.hotelRepository.findOne(uuid);
-        return hotelMono.then((Hotel hotel) -> this.hotelRepository.delete(hotel.getId())
-                .then(this.hotelByLetterRepository.delete(new HotelByLetter(hotel).getHotelByLetterKey())));
+        return hotelMono
+                .flatMap((Hotel hotel) -> this.hotelRepository.delete(hotel.getId())
+                .then(this.hotelByLetterRepository
+                        .delete(new HotelByLetter(hotel).getHotelByLetterKey())));
     }
 
     @Override

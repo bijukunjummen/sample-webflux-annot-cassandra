@@ -2,7 +2,6 @@ package cass.web;
 
 import cass.domain.Hotel;
 import cass.service.HotelService;
-import cass.web.HotelController;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -32,7 +31,8 @@ public class SampleSpringWebfluxApplicationTests {
         this.client.get().uri("/hotels/" + sampleUUID)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(Hotel.class).value().isEqualTo(new Hotel(sampleUUID, "test"));
+                .expectBody(Hotel.class)
+                .isEqualTo(new Hotel(sampleUUID, "test"));
     }
 
 }
