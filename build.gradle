@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '2.0.0.BUILD-SNAPSHOT'
+		springBootVersion = '2.0.0.M1'
 	}
 	repositories {
 		mavenCentral()
@@ -17,7 +17,7 @@ apply plugin: 'io.spring.dependency-management'
 
 jar {
 	baseName = 'sample-webflux-annot-cassandra'
-	version = '0.0.1-SNAPSHOT'
+	version = '0.0.2-SNAPSHOT'
 }
 
 sourceCompatibility = 1.8

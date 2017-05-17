@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.web.reactive.function.BodyInserters.fromObject;
 
 
 public class SampleSpringWebfluxApplicationTests {
@@ -40,7 +41,7 @@ public class SampleSpringWebfluxApplicationTests {
 
         when(hotelService.findHotelsInState(anyString()))
                 .thenReturn(Flux.just(new Hotel(sampleUUID, "test1"), new Hotel(sampleUUID, "test2")));
-        
+
         this.client = WebTestClient.bindToController(new HotelController(hotelService)).build();
     }
 
@@ -57,7 +58,7 @@ public class SampleSpringWebfluxApplicationTests {
     public void testHotelSave() throws Exception {
         Hotel toBeSaved = new Hotel(sampleUUID, "test");
         this.client.post().uri("/hotels")
-                .body(toBeSaved)
+                .body(fromObject(toBeSaved))
                 .exchange()
                 .expectStatus().isCreated()
                 .expectBody(Hotel.class)
@@ -70,7 +71,7 @@ public class SampleSpringWebfluxApplicationTests {
     public void testHotelUpdate() throws Exception {
         Hotel toBeUpdated = new Hotel(sampleUUID, "test");
         this.client.put().uri("/hotels")
-                .body(toBeUpdated)
+                .body(fromObject(toBeUpdated))
                 .exchange()
                 .expectStatus().isCreated()
                 .expectBody(Hotel.class)
